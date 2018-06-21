@@ -11,19 +11,59 @@ namespace Sampler
 {
     internal class Program
     {
-        private static IMeasurementSorter _measurementSorter;
-        private static GridCalculator _gridCalculator;
-        private static MeasurementAccumulator _measurementAccumulator;
+        private static MeasurementSorter _measurementSorter;
+        private static IConfigurationStorage _configurationStorage;
+        private static IGridCalculator _gridCalculator;
+        private static IMeasurementAccumulator _measurementAccumulator;
+        private static IPrinter _printer;
+        private static MeasurementPrinter _measurementPrinter;
 
         private static void Main(string[] args)
         {
             _measurementSorter = new MeasurementSorter();
-            _gridCalculator = new GridCalculator(Globals.SamplingGridMinutes);
+            _configurationStorage = new ConfigurationStorage();
+            _gridCalculator = new GridCalculator(_configurationStorage);
             _measurementAccumulator = new MeasurementAccumulator(_gridCalculator);
+            _printer = new ConsolePrinter();
+            _measurementPrinter = new MeasurementPrinter(_printer);
 
             var inputData = GenerateInputData();
-            SampleDataDriven(inputData);
+            var measurementMap = SampleDataDriven(inputData);
+
+            _measurementPrinter.PrintMeasurementsByMeasurementType(measurementMap);
+            _measurementPrinter.PrintMeasurementsByMeasurementTime(measurementMap);
             Console.ReadLine();
+        }
+
+        private static Dictionary<MeasurementType, IEnumerable<Measurement>> SampleDataDriven(IEnumerable<Measurement> unsampledMeasurements)
+        {
+            var mappedMeasurements = new Dictionary<MeasurementType, IEnumerable<Measurement>>();
+            var chronologicalMeasurements = OrderMeasurementsByTime(unsampledMeasurements);
+            var measurementTypes = EnumUtilities.GetEnumValues<MeasurementType>();
+
+            foreach (var enumValue in measurementTypes)
+            {
+                var sampledMeasurements = GetSampledMeasurementsOfType(chronologicalMeasurements, enumValue);
+                mappedMeasurements.Add(enumValue, sampledMeasurements);
+            }
+
+            return mappedMeasurements;
+        }
+
+        private static IEnumerable<Measurement> GetSampledMeasurementsOfType(IOrderedEnumerable<Measurement> chronologicalMeasurements, MeasurementType enumValue)
+        {
+            var chronologicalMeasurementsOfType = OrderMeasurementsByType(chronologicalMeasurements, enumValue);
+            return _measurementAccumulator.CreateSampledMeasurements(chronologicalMeasurementsOfType);
+        }
+
+        private static IOrderedEnumerable<Measurement> OrderMeasurementsByTime(IEnumerable<Measurement> unorderedMeasurements)
+        {
+            return _measurementSorter.SortByTimeAscending(unorderedMeasurements);
+        }
+
+        private static IEnumerable<Measurement> OrderMeasurementsByType(IEnumerable<Measurement> unsampledMeasurements, MeasurementType enumValue)
+        {
+            return _measurementSorter.SortByType(unsampledMeasurements, enumValue);
         }
 
         private static IEnumerable<Measurement> GenerateInputData()
@@ -46,53 +86,6 @@ namespace Sampler
 
             return new List<Measurement>() { firstMeasurement, secondMeasurement,thirdMeasurement,
                 fourthMeasurement, fifthMeasurement, sixthMeasurement, seventhMeasurement };
-        }
-
-        private static void SampleDataDriven(IEnumerable<Measurement> unsampledMeasurements)
-        {
-            var chronologicalMeasurements = OrderMeasurementsByTime(unsampledMeasurements);
-            var measurementTypes = EnumUtilities.GetEnumValues<MeasurementType>();
-
-            foreach (var enumValue in measurementTypes)
-            {
-                var chronologicalMeasurementsOfType = OrderMeasurementsByType(chronologicalMeasurements, enumValue);
-                var sampledMeasurements = _measurementAccumulator.CreateSampledMeasurements(chronologicalMeasurementsOfType);
-                PrintMeasurements(enumValue, sampledMeasurements);
-            }
-        }
-
-        private static void PrintMeasurements(MeasurementType enumValue, IEnumerable<Measurement> sampledMeasurements)
-        {
-            Console.WriteLine($"Measurement Type: {enumValue.GetDescription()}");
-            foreach (var measurement in sampledMeasurements)
-            {
-                Console.WriteLine($"\t{measurement}");
-            }
-        }
-
-        private static void Sample(DateTime startOfSampling, IEnumerable<Measurement> unsampledMeasurements)
-        {
-            var chronologicalMeasurements = OrderMeasurementsByTime(unsampledMeasurements);
-            var firstGridPoint = _gridCalculator.GetNextGridPoint(startOfSampling);
-        }
-
-        private static Dictionary<MeasurementType, IOrderedEnumerable<Measurement>> OrderMeasurements(IEnumerable<Measurement> unsampledMeasurements)
-        {
-            var sampledMeasurements = new Dictionary<MeasurementType, IOrderedEnumerable<Measurement>>();
-            var availableEnumValues = EnumUtilities.GetEnumValues<MeasurementType>();
-            var chronologicalMeasurements = OrderMeasurementsByTime(unsampledMeasurements);
-
-            return sampledMeasurements;
-        }
-
-        private static IOrderedEnumerable<Measurement> OrderMeasurementsByTime(IEnumerable<Measurement> unorderedMeasurements)
-        {
-            return _measurementSorter.SortByTimeAscending(unorderedMeasurements);
-        }
-
-        private static IEnumerable<Measurement> OrderMeasurementsByType(IEnumerable<Measurement> unsampledMeasurements, MeasurementType enumValue)
-        {
-            return _measurementSorter.SortByType(unsampledMeasurements, enumValue);
         }
     }
 }

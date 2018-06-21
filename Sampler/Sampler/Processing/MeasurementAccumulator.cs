@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sampler.Container;
+using Sampler.Contracts;
 
 namespace Sampler.Processing
 {
-    public class MeasurementAccumulator
+    public class MeasurementAccumulator : IMeasurementAccumulator
     {
-        private readonly GridCalculator _gridCalculator;
+        private readonly IGridCalculator _gridCalculator;
 
-        public MeasurementAccumulator(GridCalculator gridCalculator)
+        public MeasurementAccumulator(IGridCalculator gridCalculator)
         {
             _gridCalculator = gridCalculator;
         }

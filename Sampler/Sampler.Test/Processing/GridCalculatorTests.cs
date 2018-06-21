@@ -1,5 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Sampler.Contracts;
 using Sampler.Processing;
 
 namespace Sampler.Test.Processing
@@ -7,7 +9,15 @@ namespace Sampler.Test.Processing
     [TestClass]
     public class GridCalculatorTests
     {
-        private const int SampleIntervalMinutes = 5;
+        private const int SamplingIntervalMinutes = 5;
+        private readonly IConfigurationStorage _configurationStorage;
+
+        public GridCalculatorTests()
+        {
+            var configurationStorageMock = new Mock<IConfigurationStorage>();
+            configurationStorageMock.Setup(storage => storage.SamplingGridMinutes).Returns(SamplingIntervalMinutes);
+            _configurationStorage = configurationStorageMock.Object;
+        }
 
         [TestMethod]
         public void GetNextGridPoint_ShouldReturnNextFiveMinuteMark()
@@ -15,7 +25,7 @@ namespace Sampler.Test.Processing
             var testDateTime = new DateTime(2018, 6, 25, 9, 23, 5);
             var expectedDateTime = new DateTime(2018, 6, 25, 9, 25, 0);
 
-            var gridCalculator = new GridCalculator(SampleIntervalMinutes);
+            var gridCalculator = new GridCalculator(_configurationStorage);
             var actualDateTime = gridCalculator.GetNextGridPoint(testDateTime);
             Assert.AreEqual(expectedDateTime, actualDateTime);
         }
@@ -24,7 +34,7 @@ namespace Sampler.Test.Processing
         public void GetNextGridPoint_ShouldReturnSamplingPointIfItMatchesGrid()
         {
             var testDateTime = new DateTime(2018, 6, 25, 9, 25, 0);
-            var gridCalculator = new GridCalculator(SampleIntervalMinutes);
+            var gridCalculator = new GridCalculator(_configurationStorage);
             var actualDateTime = gridCalculator.GetNextGridPoint(testDateTime);
             Assert.AreEqual(testDateTime, actualDateTime);
         }
@@ -34,7 +44,7 @@ namespace Sampler.Test.Processing
         {
             var testDateTime = new DateTime(2018, 6, 25, 9, 56, 24);
             var expectedDateTime = new DateTime(2018, 6, 25, 10, 0, 0);
-            var gridCalculator = new GridCalculator(SampleIntervalMinutes);
+            var gridCalculator = new GridCalculator(_configurationStorage);
             var actualDateTime = gridCalculator.GetNextGridPoint(testDateTime);
             Assert.AreEqual(expectedDateTime, actualDateTime);
         }
@@ -44,7 +54,7 @@ namespace Sampler.Test.Processing
         {
             var testDateTime = new DateTime(2018, 6, 25, 23, 56, 24);
             var expectedDateTime = new DateTime(2018, 6, 26, 0, 0, 0);
-            var gridCalculator = new GridCalculator(SampleIntervalMinutes);
+            var gridCalculator = new GridCalculator(_configurationStorage);
             var actualDateTime = gridCalculator.GetNextGridPoint(testDateTime);
             Assert.AreEqual(expectedDateTime, actualDateTime);
         }
@@ -54,7 +64,7 @@ namespace Sampler.Test.Processing
         {
             var testDateTime = new DateTime(2018, 6, 30, 23, 56, 24);
             var expectedDateTime = new DateTime(2018, 7, 1, 0, 0, 0);
-            var gridCalculator = new GridCalculator(SampleIntervalMinutes);
+            var gridCalculator = new GridCalculator(_configurationStorage);
             var actualDateTime = gridCalculator.GetNextGridPoint(testDateTime);
             Assert.AreEqual(expectedDateTime, actualDateTime);
         }
@@ -64,7 +74,7 @@ namespace Sampler.Test.Processing
         {
             var testDateTime = new DateTime(2018, 12, 31, 23, 56, 24);
             var expectedDateTime = new DateTime(2019, 1, 1, 0, 0, 0);
-            var gridCalculator = new GridCalculator(SampleIntervalMinutes);
+            var gridCalculator = new GridCalculator(_configurationStorage);
             var actualDateTime = gridCalculator.GetNextGridPoint(testDateTime);
             Assert.AreEqual(expectedDateTime, actualDateTime);
         }
@@ -93,7 +103,9 @@ namespace Sampler.Test.Processing
 
         private static DateTime GetActualDateTime(int interval, DateTime testDateTime)
         {
-            var fiveMinuteGridCalculator = new GridCalculator(interval);
+            var configurationStorageMock = new Mock<IConfigurationStorage>();
+            configurationStorageMock.Setup(storage => storage.SamplingGridMinutes).Returns(interval);
+            var fiveMinuteGridCalculator = new GridCalculator(configurationStorageMock.Object);
             var actualDateTime = fiveMinuteGridCalculator.GetNextGridPoint(testDateTime);
             return actualDateTime;
         }

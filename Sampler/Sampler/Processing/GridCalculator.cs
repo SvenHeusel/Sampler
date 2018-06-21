@@ -1,15 +1,16 @@
 ﻿using System;
+using Sampler.Contracts;
 using Sampler.Utilities;
 
 namespace Sampler.Processing
 {
-    public class GridCalculator
+    public class GridCalculator : IGridCalculator
     {
         private readonly int _sampleIntervalMinutes;
 
-        public GridCalculator(int sampleIntervalMinutes)
+        public GridCalculator(IConfigurationStorage configurationStorage)
         {
-            _sampleIntervalMinutes = sampleIntervalMinutes;
+            _sampleIntervalMinutes = configurationStorage.SamplingGridMinutes;
         }
 
         public DateTime GetNextGridPoint(DateTime startOfSampling)

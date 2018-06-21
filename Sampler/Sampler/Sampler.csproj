@@ -43,9 +43,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Container\ConfigurationStorage.cs" />
     <Compile Include="Container\Measurement.cs" />
-    <Compile Include="Contracts\IMeasurementSorter.cs" />
+    <Compile Include="Contracts\IConfigurationStorage.cs" />
+    <Compile Include="Contracts\IPrinter.cs" />
     <Compile Include="Enums\MeasurementType.cs" />
+    <Compile Include="Contracts\IGridCalculator.cs" />
+    <Compile Include="Contracts\IMeasurementAccumulator.cs" />
+    <Compile Include="Processing\MeasurementPrinter.cs" />
+    <Compile Include="Processing\Printer.cs" />
     <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="Utilities\Globals.cs" />
     <Compile Include="Processing\GridCalculator.cs" />

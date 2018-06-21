@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using Sampler.Container;
+using Sampler.Contracts;
 using Sampler.Enums;
 using Sampler.Processing;
 
@@ -14,10 +16,20 @@ namespace Sampler.Test.Processing
         private const MeasurementType HeartRateType = MeasurementType.HeartRate;
         private const MeasurementType Spo2Type = MeasurementType.SpO2;
 
+        private const int SamplingIntervalMinutes = 5;
+        private readonly IConfigurationStorage _configurationStorage;
+
+        public MeasurementAccumulatorTests()
+        {
+            var configurationStorageMock = new Mock<IConfigurationStorage>();
+            configurationStorageMock.Setup(storage => storage.SamplingGridMinutes).Returns(SamplingIntervalMinutes);
+            _configurationStorage = configurationStorageMock.Object;
+        }
+
         [TestMethod]
         public void CreateSampledMeasurements_SquashesMeasurementsOfSameSamplingPoint()
         {
-            var gridCalculator = new GridCalculator(5);
+            var gridCalculator = new GridCalculator(_configurationStorage);
 
             var firstMeasurementTime = new DateTime(2018, 6, 25, 9, 21, 45);
             var secondMeasurementTime = new DateTime(2018, 6, 25, 9, 23, 12);
@@ -42,7 +54,7 @@ namespace Sampler.Test.Processing
         [TestMethod]
         public void CreateSampledMeasurements_ReturnsMultipleMeasurementsForMultipleSamplingPoints()
         {
-            var gridCalculator = new GridCalculator(5);
+            var gridCalculator = new GridCalculator(_configurationStorage);
 
             var firstMeasurementTime = new DateTime(2018, 6, 25, 9, 21, 45);
             var secondMeasurementTime = new DateTime(2018, 6, 25, 9, 27, 12);
@@ -77,7 +89,7 @@ namespace Sampler.Test.Processing
         [TestMethod]
         public void CreateSampledMeasurements_HeartRateIntegrationTest()
         {
-            var gridCalculator = new GridCalculator(5);
+            var gridCalculator = new GridCalculator(_configurationStorage);
 
             var firstMeasurementTime = new DateTime(2017, 1, 3, 10, 2, 1);
             var secondMeasurementTime = new DateTime(2017, 1, 3, 10, 4, 45);
@@ -110,7 +122,7 @@ namespace Sampler.Test.Processing
         [TestMethod]
         public void CreateSampledMeasurements_Sp02IntegrationTest()
         {
-            var gridCalculator = new GridCalculator(5);
+            var gridCalculator = new GridCalculator(_configurationStorage);
 
             var firstMeasurementTime = new DateTime(2017, 1, 3, 10, 1, 18);
             var secondMeasurementTime = new DateTime(2017, 1, 3, 10, 3, 43);
