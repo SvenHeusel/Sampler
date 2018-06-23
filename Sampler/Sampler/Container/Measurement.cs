@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Sampler.Enums;
 using Sampler.Utilities;
 
@@ -28,7 +29,7 @@ namespace Sampler.Container
 
         #region Private Methods
 
-        public double FormatDouble(double input)
+        private double FormatDouble(double input)
         {
             return Math.Truncate(input * 100) / 100;
         }
@@ -67,7 +68,8 @@ namespace Sampler.Container
         {
             var timeString = MeasurementTime.ToString(Globals.DateTimeFormat);
             var typeDescription = Type.GetDescription();
-            var valueString = $"{MeasurementValue:N2}";
+            //var valueString = $"{MeasurementValue:N2}";
+            var valueString = MeasurementValue.ToString("0,0.00", new CultureInfo("en-US", false));
             return $"{{{timeString}, {typeDescription}, {valueString}}}";
         }
 
