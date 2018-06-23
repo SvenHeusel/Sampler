@@ -31,7 +31,7 @@ namespace Sampler
             var measurementMap = SampleDataDriven(inputData);
 
             _measurementPrinter.PrintMeasurementsByMeasurementType(measurementMap);
-            //_measurementPrinter.PrintMeasurementsByMeasurementTime(measurementMap);
+            _measurementPrinter.PrintMeasurementsByMeasurementTime(measurementMap);
             Console.ReadLine();
         }
 

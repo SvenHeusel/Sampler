@@ -68,7 +68,6 @@ namespace Sampler.Container
         {
             var timeString = MeasurementTime.ToString(Globals.DateTimeFormat);
             var typeDescription = Type.GetDescription();
-            //var valueString = $"{MeasurementValue:N2}";
             var valueString = MeasurementValue.ToString("0,0.00", new CultureInfo("en-US", false));
             return $"{{{timeString}, {typeDescription}, {valueString}}}";
         }
